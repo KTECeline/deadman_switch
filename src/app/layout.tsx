@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { SwitchesProvider } from "@/lib/switches-store";
+import WalletProvider from "@/components/WalletProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,7 +31,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground font-sans`}
       >
-        <SwitchesProvider>{children}</SwitchesProvider>
+        <WalletProvider>
+          <SwitchesProvider>{children}</SwitchesProvider>
+        </WalletProvider>
       </body>
     </html>
   );

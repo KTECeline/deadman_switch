@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSwitches } from "@/lib/switches-store";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 /* ------------------------------------------------------------------ */
 /*  Animation variants                                                 */
@@ -102,6 +104,8 @@ function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { telegramConnected, connectTelegram, disconnectTelegram } = useSwitches();
   const [telegramToast, setTelegramToast] = useState(false);
+  const { connected } = useWallet();
+  const { setVisible } = useWalletModal();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -144,13 +148,22 @@ function Navbar() {
               {telegramConnected ? <Check className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
               {telegramConnected ? "Telegram Connected" : "Connect Telegram"}
             </button>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-solana-gradient text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95"
-            >
-              <Wallet className="w-4 h-4" />
-              Connect Wallet
-            </Link>
+            {connected ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-solana-gradient text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95"
+              >
+                Launch App
+              </Link>
+            ) : (
+              <button
+                onClick={() => setVisible(true)}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-solana-gradient text-sm font-semibold text-white transition-transform hover:scale-105 active:scale-95"
+              >
+                <Wallet className="w-4 h-4" />
+                Connect Wallet
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -181,6 +194,8 @@ function Navbar() {
 function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true });
+  const { connected } = useWallet();
+  const { setVisible } = useWalletModal();
 
   return (
     <section
@@ -218,24 +233,35 @@ function Hero() {
         </motion.p>
 
         <motion.div variants={fadeUp} custom={2} className="mt-10">
-          <Link
-            href="/create"
-            className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-solana-gradient text-lg font-semibold text-white transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-accent/20"
-          >
-            <Wallet className="w-5 h-5" />
-            Connect Wallet
-          </Link>
+          {connected ? (
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-solana-gradient text-lg font-semibold text-white transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-accent/20"
+            >
+              Go to Dashboard
+              <ChevronRight className="w-5 h-5" />
+            </Link>
+          ) : (
+            <button
+              onClick={() => setVisible(true)}
+              className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-solana-gradient text-lg font-semibold text-white transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-accent/20"
+            >
+              <Wallet className="w-5 h-5" />
+              Connect Wallet
+            </button>
+          )}
         </motion.div>
 
-        {/* Live counters */}
+        {/* Live counters — only show when connected */}
+        {connected && (
         <motion.div
           variants={fadeUp}
           custom={3}
           className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto"
         >
           {[
-            { icon: Shield, value: "12.5 SOL", label: "Protected" },
-            { icon: ToggleRight, value: "3", label: "Switches Active" },
+            { icon: Shield, value: "-- SOL", label: "Protected" },
+            { icon: ToggleRight, value: "0", label: "Switches Active" },
             { icon: CheckCircle, value: "0", label: "Executed" },
           ].map((stat) => (
             <div
@@ -250,6 +276,7 @@ function Hero() {
             </div>
           ))}
         </motion.div>
+        )}
       </motion.div>
     </section>
   );

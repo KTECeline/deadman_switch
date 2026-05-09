@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { getTelegramBotUrl } from "@/lib/telegram";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                               */
@@ -182,7 +183,10 @@ export function SwitchesProvider({ children }: { children: ReactNode }) {
   const [switches, setSwitches] = useState<SwitchData[]>(initialSwitches);
   const [globalActivity, setGlobalActivity] = useState<ActivityItem[]>(initialGlobalActivity);
   const [telegramConnected, setTelegramConnected] = useState(false);
-  const connectTelegram = useCallback(() => setTelegramConnected(true), []);
+  const connectTelegram = useCallback(() => {
+    window.open(getTelegramBotUrl(), "_blank");
+    setTelegramConnected(true);
+  }, []);
   const disconnectTelegram = useCallback(() => setTelegramConnected(false), []);
 
   const checkIn = useCallback((id: number) => {
