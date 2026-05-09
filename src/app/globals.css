@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #08090D;
+  --foreground: #FFFFFF;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+/* Glassmorphism */
+@layer components {
+  .glass {
+    @apply bg-card/60 backdrop-blur-xl border border-white/[0.08] rounded-2xl;
+  }
+  .glass-hover {
+    @apply glass transition-all duration-300 hover:border-white/[0.15] hover:shadow-lg hover:shadow-accent/5;
+  }
+  .glass-glow-green {
+    @apply glass border-success/20 shadow-lg shadow-success/5;
+  }
+  .glass-glow-yellow {
+    @apply glass border-warning/20 shadow-lg shadow-warning/5;
+  }
+  .glass-glow-red {
+    @apply glass border-danger/20 shadow-lg shadow-danger/5;
+  }
+}
+
+/* Gradient text */
+.text-gradient {
+  background: linear-gradient(135deg, #9945FF 0%, #14F195 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0F1117;
+}
+::-webkit-scrollbar-thumb {
+  background: #1B2230;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2D3748;
+}
+
+/* Particles container */
+.particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #9945FF;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float 6s ease-in-out infinite;
+}
