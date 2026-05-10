@@ -79,6 +79,7 @@ export default function CreateSwitchPage() {
 
   const [switchTitle, setSwitchTitle] = useState("");
   const [days, setDays] = useState(90);
+  const [demoMode, setDemoMode] = useState(false);
   const [beneficiaryAddress, setBeneficiaryAddress] = useState("");
   const [beneficiaryName, setBeneficiaryName] = useState("");
   const [amount, setAmount] = useState("5");
@@ -118,7 +119,7 @@ export default function CreateSwitchPage() {
         beneficiaryName: beneficiaryName || "Unknown",
         beneficiaryAddress,
         amount: parsedAmount,
-        triggerDays: days,
+        triggerDays: demoMode ? days / 1440 : days,
         telegramHandle: telegramMode === "manual" ? telegramHandle : undefined,
       });
       setTxSignature(sig);
@@ -198,31 +199,47 @@ export default function CreateSwitchPage() {
 
                 {/* ---- Section 1: Inactivity Period ---- */}
                 <div>
-                  <label className="text-sm font-semibold text-white mb-3 block">
-                    If I go silent for...
-                  </label>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-sm font-semibold text-white">
+                      If I go silent for...
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => { setDemoMode((d) => !d); setDays(demoMode ? 90 : 2); }}
+                      className={cn(
+                        "text-xs px-2.5 py-1 rounded-full border transition-colors",
+                        demoMode
+                          ? "border-accent text-accent bg-accent/10"
+                          : "border-white/10 text-muted hover:text-white"
+                      )}
+                    >
+                      {demoMode ? "\u26a1 Demo mode" : "Demo mode"}
+                    </button>
+                  </div>
                   <div className="flex items-center gap-4">
                     <input
                       type="range"
-                      min={1}
-                      max={90}
+                      min={demoMode ? 1 : 1}
+                      max={demoMode ? 10 : 90}
                       value={days}
                       onChange={(e) => setDays(Number(e.target.value))}
                       className="flex-1 h-2 rounded-full appearance-none bg-white/[0.06] cursor-pointer accent-accent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-solana-gradient [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-accent/30 [&::-webkit-slider-thumb]:cursor-pointer"
                     />
                     <div className="glass px-4 py-2.5 rounded-xl flex items-baseline gap-1 min-w-[90px] justify-center">
                       <span className="text-xl font-bold text-white">{days}</span>
-                      <span className="text-sm text-muted">days</span>
+                      <span className="text-sm text-muted">{demoMode ? "min" : "days"}</span>
                     </div>
                   </div>
                   <p className="mt-3 text-xs text-muted leading-relaxed">
-                    {days <= 14
-                      ? `If you don\u2019t check in for ${days} days, your switch will trigger. This is a very short period \u2014 use with caution.`
-                      : days <= 30
-                        ? `If you don\u2019t check in for ${days} days, your switch will trigger. Best for active traders.`
-                        : days <= 60
-                          ? `If you don\u2019t check in for ${days} days, your switch will trigger. A balanced choice.`
-                          : `If you don\u2019t check in for ${days} days, your switch will trigger. Recommended for most users.`}
+                    {demoMode
+                      ? `Switch fires after ${days} minute${days === 1 ? "" : "s"} of inactivity. For demo purposes only.`
+                      : days <= 14
+                        ? `If you don\u2019t check in for ${days} days, your switch will trigger. This is a very short period \u2014 use with caution.`
+                        : days <= 30
+                          ? `If you don\u2019t check in for ${days} days, your switch will trigger. Best for active traders.`
+                          : days <= 60
+                            ? `If you don\u2019t check in for ${days} days, your switch will trigger. A balanced choice.`
+                            : `If you don\u2019t check in for ${days} days, your switch will trigger. Recommended for most users.`}
                   </p>
                 </div>
 
@@ -375,7 +392,9 @@ export default function CreateSwitchPage() {
                   <Info className="w-4 h-4 text-accent-cyan shrink-0 mt-0.5" />
                   <p className="text-sm text-secondary leading-relaxed">
                     If you fail to check in for{" "}
-                    <span className="text-white font-semibold">{days} days</span>,{" "}
+                    <span className="text-white font-semibold">
+                      {days} {demoMode ? "minutes" : "days"}
+                    </span>,{" "}
                     <span className="text-white font-semibold">
                       {parsedAmount || "..."} SOL
                     </span>{" "}
