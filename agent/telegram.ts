@@ -123,11 +123,31 @@ export async function checkForAliveSignal(sinceMs: number): Promise<boolean> {
 
     for (const update of data.result) {
       offset = Math.max(offset, update.update_id + 1);
+      const chatId = update.message?.chat?.id;
+      const text = update.message?.text ?? "";
       const msgDate = (update.message?.date ?? 0) * 1000;
+
+      // Respond to /start so the bot feels alive when users connect
+      if (chatId && (text === "/start" || text.startsWith("/start "))) {
+        await fetch(apiUrl("sendMessage"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text:
+              "🔐 *Dead Man's Switch* — connected\\!\n\n" +
+              "I'll warn you here before any switch executes\\. " +
+              "Reply with anything to reset the timer\\.",
+            parse_mode: "MarkdownV2",
+          }),
+        });
+        console.log(`[telegram] Greeted new user in chat ${chatId}`);
+      }
+
       if (msgDate >= sinceMs) {
         found = true;
         console.log(
-          `[telegram] Alive signal received: "${update.message?.text ?? "(no text)"}" ` +
+          `[telegram] Alive signal received: "${text}" ` +
           `from ${update.message?.from?.username ?? update.message?.from?.id}`
         );
       }
