@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -13,24 +13,18 @@ import {
   ArrowRight,
   Loader2,
   Check,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { cn } from "@/lib/utils";
 import { useSwitches } from "@/lib/switches-store";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
 /* ------------------------------------------------------------------ */
-
-const PERIOD_OPTIONS = [30, 60, 90, 180];
-
-const PERIOD_DESCRIPTIONS: Record<number, string> = {
-  30: "If you don\u2019t check in for 30 days, your switch will trigger. Best for active traders.",
-  60: "If you don\u2019t check in for 60 days, your switch will trigger. A balanced choice.",
-  90: "If you don\u2019t check in for 90 days, your switch will trigger. Recommended for most users.",
-  180: "If you don\u2019t check in for 180 days, your switch will trigger. For long-term holders.",
-};
 
 /* ------------------------------------------------------------------ */
 /*  Animated Checkmark                                                 */
@@ -80,6 +74,9 @@ function AnimatedCheckmark() {
 
 export default function CreateSwitchPage() {
   const { addSwitch } = useSwitches();
+  const { connection } = useConnection();
+  const { publicKey } = useWallet();
+
   const [switchTitle, setSwitchTitle] = useState("");
   const [days, setDays] = useState(90);
   const [beneficiaryAddress, setBeneficiaryAddress] = useState("");
@@ -89,26 +86,50 @@ export default function CreateSwitchPage() {
   const [telegramHandle, setTelegramHandle] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [txSignature, setTxSignature] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!publicKey) { setWalletBalance(null); return; }
+    connection.getBalance(publicKey)
+      .then((lamports) => setWalletBalance(lamports / LAMPORTS_PER_SOL))
+      .catch(() => setWalletBalance(null));
+  }, [publicKey, connection]);
 
   const parsedAmount = parseFloat(amount) || 0;
-  const canSubmit = beneficiaryAddress.trim().length > 0 && parsedAmount > 0;
+  const canSubmit =
+    !!publicKey &&
+    beneficiaryAddress.trim().length > 0 &&
+    parsedAmount > 0 &&
+    !submitting;
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
     setSubmitting(true);
-    setTimeout(() => {
-      addSwitch({
-        title: switchTitle.trim() || (beneficiaryName ? `Transfer to ${beneficiaryName}` : `Switch ${Date.now().toString(36).slice(-4)}`),
+    setSubmitError(null);
+    try {
+      const sig = await addSwitch({
+        title:
+          switchTitle.trim() ||
+          (beneficiaryName
+            ? `Transfer to ${beneficiaryName}`
+            : `Switch ${Date.now().toString(36).slice(-4)}`),
         beneficiaryName: beneficiaryName || "Unknown",
         beneficiaryAddress,
         amount: parsedAmount,
         triggerDays: days,
         telegramHandle: telegramMode === "manual" ? telegramHandle : undefined,
       });
-      setSubmitting(false);
+      setTxSignature(sig);
       setSuccess(true);
-    }, 1500);
-  }, [canSubmit, addSwitch, beneficiaryName, beneficiaryAddress, parsedAmount, days, telegramMode, telegramHandle]);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Transaction failed. Please try again.";
+      setSubmitError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  }, [canSubmit, addSwitch, switchTitle, beneficiaryName, beneficiaryAddress, parsedAmount, days, telegramMode, telegramHandle]);
 
   const handleReset = useCallback(() => {
     setSwitchTitle("");
@@ -119,6 +140,8 @@ export default function CreateSwitchPage() {
     setTelegramMode(null);
     setTelegramHandle("");
     setSuccess(false);
+    setTxSignature(null);
+    setSubmitError(null);
   }, []);
 
   return (
@@ -251,7 +274,12 @@ export default function CreateSwitchPage() {
                     <span className="text-muted font-medium ml-2">SOL</span>
                   </div>
                   <p className="mt-2 text-xs text-muted">
-                    Wallet Balance: 12.5 SOL
+                    Wallet Balance:{" "}
+                    {walletBalance !== null
+                      ? `${walletBalance.toFixed(3)} SOL`
+                      : publicKey
+                      ? "Loading..."
+                      : "Connect wallet"}
                   </p>
                 </div>
 
@@ -362,15 +390,30 @@ export default function CreateSwitchPage() {
                   </p>
                 </div>
 
+                {/* ---- Error ---- */}
+                <AnimatePresence>
+                  {submitError && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex items-start gap-2 rounded-xl bg-danger/10 border border-danger/20 px-4 py-3 text-sm text-danger"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{submitError}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* ---- Submit ---- */}
                 <motion.button
                   onClick={handleSubmit}
-                  disabled={!canSubmit || submitting}
-                  whileHover={canSubmit && !submitting ? { scale: 1.01 } : {}}
-                  whileTap={canSubmit && !submitting ? { scale: 0.99 } : {}}
+                  disabled={!canSubmit}
+                  whileHover={canSubmit ? { scale: 1.01 } : {}}
+                  whileTap={canSubmit ? { scale: 0.99 } : {}}
                   className={cn(
                     "w-full py-4 rounded-xl font-semibold text-base flex items-center justify-center gap-2.5 transition-all duration-300",
-                    canSubmit && !submitting
+                    canSubmit
                       ? "bg-solana-gradient text-white shadow-lg shadow-accent/20 cursor-pointer"
                       : "bg-card-alt text-muted cursor-not-allowed"
                   )}
@@ -378,7 +421,12 @@ export default function CreateSwitchPage() {
                   {submitting ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Creating Switch...
+                      Creating on-chain...
+                    </>
+                  ) : !publicKey ? (
+                    <>
+                      <Wallet className="w-5 h-5" />
+                      Connect Wallet to Continue
                     </>
                   ) : (
                     <>
@@ -418,18 +466,26 @@ export default function CreateSwitchPage() {
                 Your assets are now protected.
               </motion.p>
 
-              <motion.div
-                className="glass px-5 py-3 rounded-xl mb-10 inline-flex items-center gap-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.6 }}
-              >
-                <span className="text-muted text-sm">tx:</span>
-                <span className="font-mono text-sm text-white">
-                  4sGjL7Rq2nXm5Yp9wKv3bFd6hTc1eAo8kPm
-                </span>
-                <ExternalLink className="w-3.5 h-3.5 text-accent cursor-pointer hover:text-accent-cyan transition-colors" />
-              </motion.div>
+              {txSignature && (
+                <motion.div
+                  className="glass px-5 py-3 rounded-xl mb-10 inline-flex items-center gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.6 }}
+                >
+                  <span className="text-muted text-sm">tx:</span>
+                  <span className="font-mono text-sm text-white">
+                    {txSignature.slice(0, 8)}...{txSignature.slice(-8)}
+                  </span>
+                  <a
+                    href={`https://explorer.solana.com/tx/${txSignature}?cluster=devnet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-accent hover:text-accent-cyan transition-colors" />
+                  </a>
+                </motion.div>
+              )}
 
               <motion.div
                 className="flex flex-col sm:flex-row gap-3"

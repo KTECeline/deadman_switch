@@ -27,6 +27,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.local.example
 
 # vercel
 .vercel
@@ -34,3 +35,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# anchor / solana
+.anchor
+target/
+dist/
+**/*.rs.bk
+x402/oracle-keypair.json
+agent/grace-periods.json
+agent/telegram-offset.json
+agent/keypair.json

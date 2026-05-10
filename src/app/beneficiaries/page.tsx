@@ -232,7 +232,7 @@ export default function BeneficiariesPage() {
 
         {/* ── Beneficiaries Grid ────────────────────────────────── */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {beneficiaries.map((b, i) => (
+          {beneficiaries.map((b) => (
             <motion.div
               key={b.name}
               variants={itemVariants}

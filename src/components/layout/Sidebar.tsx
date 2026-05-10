@@ -6,8 +6,7 @@ import {
   LayoutDashboard,
   ToggleRight,
   Users,
-  Activity,
-  Settings,
+  Heart,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,6 +28,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Create Switch", icon: ToggleRight, href: "/create" },
   { label: "My Switches", icon: Users, href: "/switches" },
+  { label: "Beneficiaries", icon: Heart, href: "/beneficiaries" },
 ];
 
 export default function Sidebar({ isOpen, onClose, className }: SidebarProps) {
