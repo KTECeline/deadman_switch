@@ -29,6 +29,7 @@ import {
   sendExecutionNotice,
   sendResetConfirmation,
   checkForAliveSignal,
+  processBotCommands,
 } from "./telegram";
 import {
   startGracePeriod,
@@ -87,6 +88,8 @@ async function runConditionLoop(
   agentKeypair: Keypair,
   executedSwitches: Set<string>
 ) {
+  await processBotCommands();
+
   const switches = await fetchActiveSwitches(program);
   console.log(`\n[agent] Checking ${switches.length} active switch(es)...`);
 

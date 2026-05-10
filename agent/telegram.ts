@@ -106,6 +106,49 @@ export async function sendResetConfirmation(
 }
 
 /**
+ * Always-on poll — responds to /start and any bot commands regardless of switch state.
+ * Call this every agent loop cycle.
+ */
+export async function processBotCommands(): Promise<void> {
+  if (!process.env.TELEGRAM_BOT_TOKEN) return;
+
+  let offset = loadOffset();
+
+  try {
+    const res = await fetch(`${apiUrl("getUpdates")}?offset=${offset}&limit=100&timeout=0`);
+    const data = (await res.json()) as any;
+
+    if (!data.ok || !data.result?.length) return;
+
+    for (const update of data.result) {
+      offset = Math.max(offset, update.update_id + 1);
+      const chatId = update.message?.chat?.id;
+      const text = (update.message?.text ?? "").trim();
+
+      if (chatId && (text === "/start" || text.startsWith("/start "))) {
+        await fetch(apiUrl("sendMessage"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text:
+              "🔐 *Dead Man's Switch* — connected\\!\n\n" +
+              "I'll warn you here before any switch executes\\. " +
+              "Reply with anything to reset the timer\\.",
+            parse_mode: "MarkdownV2",
+          }),
+        });
+        console.log(`[telegram] Greeted new user in chat ${chatId}`);
+      }
+    }
+
+    saveOffset(offset);
+  } catch (err: any) {
+    console.error("[telegram] Failed to process bot commands:", err.message);
+  }
+}
+
+/**
  * Polls for new Telegram messages since `sinceMs` (unix milliseconds).
  * Returns true if any message arrived — we treat ANY message as "I'm alive."
  */
@@ -126,23 +169,6 @@ export async function checkForAliveSignal(sinceMs: number): Promise<boolean> {
       const chatId = update.message?.chat?.id;
       const text = update.message?.text ?? "";
       const msgDate = (update.message?.date ?? 0) * 1000;
-
-      // Respond to /start so the bot feels alive when users connect
-      if (chatId && (text === "/start" || text.startsWith("/start "))) {
-        await fetch(apiUrl("sendMessage"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text:
-              "🔐 *Dead Man's Switch* — connected\\!\n\n" +
-              "I'll warn you here before any switch executes\\. " +
-              "Reply with anything to reset the timer\\.",
-            parse_mode: "MarkdownV2",
-          }),
-        });
-        console.log(`[telegram] Greeted new user in chat ${chatId}`);
-      }
 
       if (msgDate >= sinceMs) {
         found = true;
