@@ -4,7 +4,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useMemo } from "react";
 import { PublicKey } from "@solana/web3.js";
-import idl from "../../target/idl/dead_mans_switch.json";
+import idl from "../idl/dead_mans_switch.json";
 
 export const PROGRAM_ID = new PublicKey(
   "5VTjU3UxdPuXCgEes3BZHKU1AXYCnTU2YFF5LdWqTXJx"

@@ -1,0 +1,496 @@
+{
+  "address": "5VTjU3UxdPuXCgEes3BZHKU1AXYCnTU2YFF5LdWqTXJx",
+  "metadata": {
+    "name": "dead_mans_switch",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Dead Man's Switch — Autonomous On-chain Executor"
+  },
+  "instructions": [
+    {
+      "name": "cancel",
+      "discriminator": [
+        232,
+        219,
+        223,
+        41,
+        219,
+        236,
+        220,
+        190
+      ],
+      "accounts": [
+        {
+          "name": "switch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  119,
+                  105,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "arg",
+                "path": "switch_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "switch"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "switch_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "check_in",
+      "discriminator": [
+        209,
+        253,
+        4,
+        217,
+        250,
+        241,
+        207,
+        50
+      ],
+      "accounts": [
+        {
+          "name": "switch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  119,
+                  105,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "arg",
+                "path": "switch_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "switch"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "switch_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "create_switch",
+      "discriminator": [
+        120,
+        11,
+        193,
+        114,
+        80,
+        234,
+        99,
+        128
+      ],
+      "accounts": [
+        {
+          "name": "switch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  119,
+                  105,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "arg",
+                "path": "switch_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "switch_id",
+          "type": "u64"
+        },
+        {
+          "name": "check_in_interval",
+          "type": "i64"
+        },
+        {
+          "name": "locked_amount",
+          "type": "u64"
+        },
+        {
+          "name": "beneficiary",
+          "type": "pubkey"
+        },
+        {
+          "name": "watcher",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "execute",
+      "discriminator": [
+        130,
+        221,
+        242,
+        154,
+        13,
+        193,
+        189,
+        29
+      ],
+      "accounts": [
+        {
+          "name": "switch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  119,
+                  105,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "switch.owner",
+                "account": "Switch"
+              },
+              {
+                "kind": "arg",
+                "path": "switch_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "beneficiary",
+          "writable": true,
+          "relations": [
+            "switch"
+          ]
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "relations": [
+            "switch"
+          ]
+        },
+        {
+          "name": "caller",
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "switch_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "heartbeat",
+      "discriminator": [
+        202,
+        104,
+        56,
+        6,
+        240,
+        170,
+        63,
+        134
+      ],
+      "accounts": [
+        {
+          "name": "switch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  119,
+                  105,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "switch.owner",
+                "account": "Switch"
+              },
+              {
+                "kind": "arg",
+                "path": "switch_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "watcher",
+          "signer": true,
+          "relations": [
+            "switch"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "switch_id",
+          "type": "u64"
+        },
+        {
+          "name": "activity_type",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "link_cnft",
+      "discriminator": [
+        235,
+        45,
+        24,
+        8,
+        250,
+        20,
+        10,
+        18
+      ],
+      "accounts": [
+        {
+          "name": "switch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  119,
+                  105,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "arg",
+                "path": "switch_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "switch"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "switch_id",
+          "type": "u64"
+        },
+        {
+          "name": "asset_id",
+          "type": "pubkey"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Switch",
+      "discriminator": [
+        242,
+        175,
+        214,
+        214,
+        230,
+        53,
+        61,
+        158
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidInterval",
+      "msg": "Check-in interval must be greater than zero"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidAmount",
+      "msg": "Locked amount must be greater than zero"
+    },
+    {
+      "code": 6002,
+      "name": "SwitchNotExpired",
+      "msg": "Switch has not expired yet — owner has checked in recently"
+    },
+    {
+      "code": 6003,
+      "name": "NotOwner",
+      "msg": "Only the switch owner can perform this action"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidBeneficiary",
+      "msg": "Beneficiary account does not match the switch record"
+    },
+    {
+      "code": 6005,
+      "name": "CnftAlreadyLinked",
+      "msg": "A cNFT is already linked to this switch"
+    },
+    {
+      "code": 6006,
+      "name": "ActivityTypeTooLong",
+      "msg": "Activity type label must be 32 bytes or fewer"
+    }
+  ],
+  "types": [
+    {
+      "name": "Switch",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "beneficiary",
+            "type": "pubkey"
+          },
+          {
+            "name": "check_in_interval",
+            "type": "i64"
+          },
+          {
+            "name": "last_check_in",
+            "type": "i64"
+          },
+          {
+            "name": "locked_amount",
+            "type": "u64"
+          },
+          {
+            "name": "switch_id",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "cnft_asset_id",
+            "type": "pubkey"
+          },
+          {
+            "name": "watcher",
+            "type": "pubkey"
+          },
+          {
+            "name": "last_activity_type",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
