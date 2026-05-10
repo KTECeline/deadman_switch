@@ -11,7 +11,8 @@
     "agent": "ts-node -P tsconfig.agent.json agent/index.ts",
     "oracle": "ts-node -P tsconfig.agent.json x402/server.ts",
     "create-switch": "ts-node -P tsconfig.agent.json agent/create-test-switch.ts",
-    "setup-tree": "ts-node -P tsconfig.agent.json agent/setup-tree.ts"
+    "setup-tree": "ts-node -P tsconfig.agent.json agent/setup-tree.ts",
+    "tg:chatid": "ts-node -P tsconfig.agent.json agent/get-telegram-chatid.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",

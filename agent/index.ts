@@ -48,7 +48,11 @@ const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID ?? "";
 
 // ── Agent keypair (the authorized watcher) ──────────────────────────────────
 function loadAgentKeypair(): Keypair {
-  // Use AGENT_KEYPAIR_PATH if set, otherwise fall back to Solana CLI default
+  // Accept raw JSON array via env (for Railway/cloud deployments)
+  if (process.env.AGENT_KEYPAIR_JSON) {
+    const json = JSON.parse(process.env.AGENT_KEYPAIR_JSON);
+    return Keypair.fromSecretKey(new Uint8Array(json));
+  }
   const walletPath =
     process.env.AGENT_KEYPAIR_PATH ??
     path.join(process.env.HOME!, ".config/solana/id.json");
